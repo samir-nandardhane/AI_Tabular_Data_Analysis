@@ -39,9 +39,6 @@ with st.sidebar:
     if st.button("View Data", key="view_data_button"):
         st.session_state.page = "View Data"
 
-    if st.button("VizAI", key="vizai_button"):
-        st.session_state.page = "VizAI"
-
 # Display content based on the selected page
 if st.session_state.page == "Upload Data":
     # File uploader for CSV or Excel files
@@ -146,58 +143,3 @@ elif st.session_state.page == "View Report":
 
 elif st.session_state.page == "View Data":
     st.dataframe(st.session_state.data)
-
-elif st.session_state.page == "VizAI":
-    st.title('VizAI')
-    prompt = st.chat_input("Describe the chart you want to create using the data.")
-    if prompt:
-        # Add user message to chat history
-        #st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Add a spinner for processing
-        with st.spinner("Generating chart..."):
-            if st.session_state.data is not None:
-                df = st.session_state.data
-                try:
-                    # Generate the chart using df.ask.plot(prompt)
-
-                    chart = df.ask.plot(prompt)
-                    time.sleep(30)
-
-                    # Display the generated chart
-                    with st.chat_message("assistant"):
-                        st.image('output.png', caption="Generated Image", use_column_width=True)
-
-                    # Add assistant chart response to chat history
-                    #st.session_state.messages.append({"role": "assistant", "content": f"{st.image('output.png',use_column_width=True)}"})
-
-                except AttributeError:
-                    response_text = "The data_ai module does not provide the 'plot' method."
-                    with st.chat_message("assistant"):
-                        st.markdown(response_text)
-
-                    #st.session_state.messages.append({"role": "assistant", "content": response_text})
-
-            else:
-                # If no data is uploaded, handle general prompts using OpenAI API
-                try:
-                    openai_response = openai.ChatCompletion.create(
-                        model="gpt-4",
-                        messages=[
-                            {"role": "system", "content": "You are a helpful assistant."},
-                            {"role": "user", "content": prompt}
-                        ]
-                    )
-                    response_text = openai_response.choices[0].message.content
-                    with st.chat_message("assistant"):
-                        st.markdown(response_text)
-
-                    st.session_state.messages.append({"role": "assistant", "content": response_text})
-                except Exception as e:
-                    response_text = f"Error with OpenAI API: {e}"
-                    with st.chat_message("assistant"):
-                        st.markdown(response_text)
-
-                    st.session_state.messages.append({"role": "assistant", "content": response_text})
