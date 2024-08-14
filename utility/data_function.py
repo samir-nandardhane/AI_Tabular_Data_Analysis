@@ -1,6 +1,5 @@
-import data_cleaning as dc
+from utility import data_cleaning as dc, data_utility as du
 from ydata_profiling import ProfileReport
-import data_utility as du
 
 
 def read_data(file):

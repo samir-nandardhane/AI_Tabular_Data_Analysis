@@ -1,11 +1,9 @@
-import time
-
 import streamlit as st
 import openai
 import pandas as pd
-import data_function as fun
+from utility import data_function as fun
 from streamlit_ydata_profiling import st_profile_report
-import data_ai  # Ensure this module provides the necessary functionality
+from utility import data_ai
 
 
 def profile_report(data):
@@ -30,8 +28,8 @@ with st.sidebar:
     if st.button("Upload Data", key="upload_data_button"):
         st.session_state.page = "Upload Data"
 
-    if st.button("Chat", key="chat_button"):
-        st.session_state.page = "Chat"
+    if st.button("Start Chat", key="chat_button"):
+        st.session_state.page = "Start Chat"
 
     if st.button("View Report", key="report_button"):
         st.session_state.page = "View Report"
@@ -56,7 +54,7 @@ if st.session_state.page == "Upload Data":
         st.session_state.data = fun.clean_data(df)  # Store the DataFrame in session state
         st.write("File uploaded successfully.")
 
-elif st.session_state.page == "Chat":
+elif st.session_state.page == "Start Chat":
     st.title("Chat with Assistant")
 
     # Display chat history
