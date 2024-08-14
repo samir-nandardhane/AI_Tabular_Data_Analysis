@@ -23,6 +23,9 @@ if "data" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "Upload Data"
 
+
+st.title("AI Tabular Data Analysis")
+
 # Sidebar for navigation with blue buttons
 with st.sidebar:
     if st.button("Upload Data", key="upload_data_button"):
