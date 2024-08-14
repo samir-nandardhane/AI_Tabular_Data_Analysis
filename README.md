@@ -1,3 +1,6 @@
 # TabAI - Chatbot For Data Analysis
 
-## Architecture
+## Architecture Diagram
+
+![TabAI.png](TabAI.png)
+

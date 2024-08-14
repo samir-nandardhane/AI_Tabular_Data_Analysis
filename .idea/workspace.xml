@@ -43,7 +43,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/Work_Space/python/AI_Tabular_Data_Analysis/utility",
+    "last_opened_file_path": "D:/Work_Space/python/AI_Tabular_Data_Analysis",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -54,6 +54,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Work_Space\python\AI_Tabular_Data_Analysis" />
       <recent name="D:\Work_Space\python\AI_Tabular_Data_Analysis\utility" />
       <recent name="D:\Work_Space\Python_Workspace\AI_Tabular_Data_Analysis" />
     </key>
@@ -111,7 +112,7 @@
       <workItem from="1721169262610" duration="577000" />
       <workItem from="1723652981398" duration="82000" />
       <workItem from="1723654311828" duration="51000" />
-      <workItem from="1723663034446" duration="1683000" />
+      <workItem from="1723663034446" duration="2344000" />
     </task>
     <servers />
   </component>
