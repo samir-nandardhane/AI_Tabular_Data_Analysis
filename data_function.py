@@ -10,7 +10,7 @@ def read_data(file):
 def clean_data(data):
     data = dc.remove_null_values(data)
     data = dc.remove_duplicates(data)
-    data = dc.remove_leading_trailing_whitespace(data)
+    #data = dc.remove_leading_trailing_whitespace(data)
     return data
 
 

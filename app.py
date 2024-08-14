@@ -1,100 +1,203 @@
+import time
+
 import streamlit as st
+import openai
+import pandas as pd
 import data_function as fun
 from streamlit_ydata_profiling import st_profile_report
-
-st.set_page_config(layout="wide")
-
-if 'uploaded' not in st.session_state:
-    st.session_state.uploaded = False
-
-if 'data' not in st.session_state:
-    st.session_state.data = None
-
-
-def show_data(data):
-    return data.head(10)
+import data_ai  # Ensure this module provides the necessary functionality
 
 
 def profile_report(data):
     return fun.get_data_profile_report(data)
 
 
-def get_chart(data, chart_type, measure, dimension):
-    try:
-        if chart_type == 'Bar Chart':
-            return st.bar_chart(data, x=dimension[0], y=measure[0])
-        elif chart_type == 'Scatter Chart':
-            return st.scatter_chart(data, x=measure[0], y=measure[1])
-        elif chart_type == 'Line Chart':
-            return st.line_chart(data, x=measure[0], y=measure[1])
-        elif chart_type == 'Select Chart type':
-            return st.warning('Select chart type')
+# Initialize the OpenAI API key
+# Add your open ai key here Statement here
+
+conversation_history = []
+
+# Initialize session state for messages, data, and page selection
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "data" not in st.session_state:
+    st.session_state.data = None
+if "page" not in st.session_state:
+    st.session_state.page = "Upload Data"
+
+# Sidebar for navigation with blue buttons
+with st.sidebar:
+    if st.button("Upload Data", key="upload_data_button"):
+        st.session_state.page = "Upload Data"
+
+    if st.button("Chat", key="chat_button"):
+        st.session_state.page = "Chat"
+
+    if st.button("View Report", key="report_button"):
+        st.session_state.page = "View Report"
+
+    if st.button("View Data", key="view_data_button"):
+        st.session_state.page = "View Data"
+
+    if st.button("VizAI", key="vizai_button"):
+        st.session_state.page = "VizAI"
+
+# Display content based on the selected page
+if st.session_state.page == "Upload Data":
+    # File uploader for CSV or Excel files
+    uploaded_file = st.file_uploader("Attach a file (CSV or Excel)", type=["csv", "xlsx"])
+
+    if uploaded_file is not None:
+        if uploaded_file.name.endswith(".csv"):
+            df = pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith(".xlsx"):
+            df = pd.read_excel(uploaded_file)
         else:
-            return st.error(f'Chart type {chart_type} not supported')
-    except Exception as e:
-        return st.error(f'Error:  Choose Correct Measure, Dimension and Corresponding Chat Type')
+            st.error("Unsupported file format.")
+            st.stop()
 
+        st.session_state.data = fun.clean_data(df)  # Store the DataFrame in session state
+        st.write("File uploaded successfully.")
 
-st.title('Welcome to TabAI')
+elif st.session_state.page == "Chat":
+    st.title("Chat with Assistant")
 
-st.sidebar.button(label='Data Source')
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-uploaded_file = st.file_uploader('Choose a CSV file', type=['csv', 'xlsx'])
+    with st.chat_message("assistant"):
+        st.write("Welcome to TabAI")
 
-if uploaded_file is not None and not st.session_state.uploaded:
-    try:
-        if uploaded_file.name.endswith('.csv'):
-            data = fun.read_data(uploaded_file)
-        elif uploaded_file.name.endswith('.xlsx'):
-            data = fun.read_data(uploaded_file)
-        else:
-            st.error("Unsupported file type. Please upload a CSV or Excel file.")
+    # Chat input for user prompts
+    prompt = st.chat_input("Ask a question about the attached file or anything else")
+    if prompt:
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-        st.session_state.data = data
-        st.session_state.uploaded = True
+        # Add a spinner for processing
+        with st.spinner("Processing..."):
+            # Check if data is uploaded
+            if st.session_state.data is not None:
+                df = st.session_state.data
+                try:
+                    # Get the response from df.ask(prompt)
+                    result = df.ask(prompt)
 
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+                    response_text = result
 
-if st.sidebar.button(label='View Data'):
-    st.session_state.button_clicked = False
-    st.write('Here is 10 Rows of Your data')
-    st.dataframe(show_data(st.session_state.data))
+                    # Format the response using OpenAI
+                    openai_response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user",
+                             "content": f"Given the user's input: '{prompt}' and the data's response: '{response_text}', please generate a well-structured and informative response."}
+                        ]
+                    )
+                    response_text = openai_response.choices[0].message.content
 
-if st.sidebar.button(label='View Profile'):
-    st.session_state.button_clicked = False
-    st.write('Here Your Data Profile Report')
+                    # Display assistant text response
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
+
+                    # Add assistant response to chat history
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                    conversation_history.append(response_text)
+
+                except AttributeError:
+                    response_text = "The data_ai module does not provide the 'ask' method."
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
+
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                    conversation_history.append(response_text)
+
+            else:
+                # If no data is uploaded, handle general prompts using OpenAI API
+                try:
+                    openai_response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user", "content": prompt}
+                        ]
+                    )
+                    response_text = openai_response.choices[0].message.content
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
+
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                    conversation_history.append(response_text)
+                except Exception as e:
+                    response_text = f"Error with OpenAI API: {e}"
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
+
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                    conversation_history.append(response_text)
+
+elif st.session_state.page == "View Report":
+    st.title('Profile Report')
     st_profile_report(profile_report(st.session_state.data))
 
-if st.sidebar.button(label='Ask Question'):
-    st.session_state.button_clicked = False
-    with st.chat_message("User"):
-        st.write("Welcome to TabAI")
-        st.write("This functionality Under Development")
+elif st.session_state.page == "View Data":
+    st.dataframe(st.session_state.data)
 
-    st.chat_input("Say Something")
+elif st.session_state.page == "VizAI":
+    st.title('VizAI')
+    prompt = st.chat_input("Describe the chart you want to create using the data.")
+    if prompt:
+        # Add user message to chat history
+        #st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
+        # Add a spinner for processing
+        with st.spinner("Generating chart..."):
+            if st.session_state.data is not None:
+                df = st.session_state.data
+                try:
+                    # Generate the chart using df.ask.plot(prompt)
 
-if 'button_clicked' not in st.session_state:
-    st.session_state.button_clicked = False
+                    chart = df.ask.plot(prompt)
+                    time.sleep(30)
 
-if st.sidebar.button(label='VizAI'):
-    st.session_state.button_clicked = True
+                    # Display the generated chart
+                    with st.chat_message("assistant"):
+                        st.image('output.png', caption="Generated Image", use_column_width=True)
 
-if st.session_state.button_clicked:
-    col1, col2, col3 = st.columns(3)
+                    # Add assistant chart response to chat history
+                    #st.session_state.messages.append({"role": "assistant", "content": f"{st.image('output.png',use_column_width=True)}"})
 
-    with col1:
-        st.subheader('Measure')
-        measure_columns = st.multiselect('Select Measure', fun.get_measure_columns(st.session_state.data))
+                except AttributeError:
+                    response_text = "The data_ai module does not provide the 'plot' method."
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
 
-    with col2:
-        st.subheader('Dimension')
-        dimension_columns = st.multiselect('Select Dimension', fun.get_dimension_columns(st.session_state.data))
+                    #st.session_state.messages.append({"role": "assistant", "content": response_text})
 
-    with col3:
-        st.subheader('Chart Type')
-        chart_type = st.selectbox('Select Chart Type', ['Select Chart type','Bar Chart', 'Line Chart', 'Scatter Plot'])
+            else:
+                # If no data is uploaded, handle general prompts using OpenAI API
+                try:
+                    openai_response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user", "content": prompt}
+                        ]
+                    )
+                    response_text = openai_response.choices[0].message.content
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
 
-    with st.container():
-        get_chart(st.session_state.data, chart_type, measure_columns, dimension_columns)
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                except Exception as e:
+                    response_text = f"Error with OpenAI API: {e}"
+                    with st.chat_message("assistant"):
+                        st.markdown(response_text)
+
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
