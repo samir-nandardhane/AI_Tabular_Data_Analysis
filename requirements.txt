@@ -1,0 +1,6 @@
+streamlit~=1.28.0
+openai~=0.28.0
+pandas~=2.2.2
+matplotlib~=3.9.1
+streamlit_ydata_profiling~=0.2.1
+ydata-profiling~=4.9.0

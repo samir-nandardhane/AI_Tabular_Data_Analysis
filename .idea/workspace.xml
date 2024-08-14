@@ -50,6 +50,11 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Requirements"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -59,6 +64,7 @@
       <recent name="D:\Work_Space\Python_Workspace\AI_Tabular_Data_Analysis" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Work_Space\python\AI_Tabular_Data_Analysis" />
       <recent name="D:\Work_Space\python\AI_Tabular_Data_Analysis\utility" />
     </key>
   </component>
@@ -113,6 +119,8 @@
       <workItem from="1723652981398" duration="82000" />
       <workItem from="1723654311828" duration="51000" />
       <workItem from="1723663034446" duration="2344000" />
+      <workItem from="1723666567655" duration="365000" />
+      <workItem from="1723668080396" duration="299000" />
     </task>
     <servers />
   </component>
