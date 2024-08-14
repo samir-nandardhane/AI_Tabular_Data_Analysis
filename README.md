@@ -1,1 +1,3 @@
-AI_Tabular_Data_Analysis
+# TabAI - Chatbot For Data Analysis
+
+## Architecture
