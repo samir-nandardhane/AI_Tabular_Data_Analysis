@@ -60,13 +60,13 @@ if st.session_state.page == "Upload Data":
 elif st.session_state.page == "Start Chat":
     st.title("Chat with Assistant")
 
+    with st.chat_message("assistant"):
+        st.write("Welcome to TabAI")
+
     # Display chat history
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
-    with st.chat_message("assistant"):
-        st.write("Welcome to TabAI")
 
     # Chat input for user prompts
     prompt = st.chat_input("Ask a question about the attached file or anything else")
