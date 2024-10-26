@@ -1,15 +1,47 @@
 import streamlit as st
 import openai
 import pandas as pd
+from googleapiclient.http import MediaIoBaseDownload
+
 from utility import data_function as fun
 from streamlit_ydata_profiling import st_profile_report
-from utility import data_ai
+import os
+import pickle
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
 
 
 def profile_report(data):
     return fun.get_data_profile_report(data)
 
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
+
+def get_token():
+    creds = None
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'client_secrets.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    return creds
+
+def list_drive_files():
+    creds = get_token()
+    service = build('drive', 'v3', credentials=creds)
+    results = service.files().list(pageSize=50).execute()
+    return {file['name']: file['id'] for file in results.get('files', [])}
 # Initialize the OpenAI API key
 # Add your open ai key here Statement here
 
@@ -22,6 +54,12 @@ if "data" not in st.session_state:
     st.session_state.data = None
 if "page" not in st.session_state:
     st.session_state.page = "Upload Data"
+if "selected_file_id" not in st.session_state:
+    st.session_state.selected_file_id = None
+if "selected_file_name" not in st.session_state:
+    st.session_state.selected_file_name = None
+if "file_confirmed" not in st.session_state:
+    st.session_state.file_confirmed = False
 
 
 st.title("AI Tabular Data Analysis")
@@ -39,12 +77,13 @@ with st.sidebar:
 
     if st.button("View Data", key="view_data_button"):
         st.session_state.page = "View Data"
+    if st.sidebar.button("Drive File Selection", key="drive_file_button"):
+        st.session_state.page = "Drive File Selection"
 
 # Display content based on the selected page
 if st.session_state.page == "Upload Data":
     # File uploader for CSV or Excel files
     uploaded_file = st.file_uploader("Attach a file (CSV or Excel)", type=["csv", "xlsx"])
-
     if uploaded_file is not None:
         if uploaded_file.name.endswith(".csv"):
             df = pd.read_csv(uploaded_file)
@@ -56,6 +95,46 @@ if st.session_state.page == "Upload Data":
 
         st.session_state.data = fun.clean_data(df)  # Store the DataFrame in session state
         st.write("File uploaded successfully.")
+
+elif st.session_state.page == "Drive File Selection":
+    st.title("Drive File Selection")
+
+    if st.button("Connect to Google Drive"):
+        files = list_drive_files()
+        if files:
+            st.session_state.drive_files = files
+            st.title("Connected to Google Drive")
+        else:
+            st.error("No files found or connection failed.")
+
+    if "drive_files" in st.session_state:
+        selected_file = st.selectbox("Choose a file from Google Drive:",
+                                     options=list(st.session_state.drive_files.keys()))
+        st.session_state.selected_file_name = selected_file
+        st.session_state.selected_file_id = st.session_state.drive_files[selected_file]
+
+    if st.session_state.selected_file_name and st.button("Use This File"):
+        st.session_state.file_confirmed = True
+        st.write(f"File selected: {st.session_state.selected_file_name}")
+
+        creds = get_token()
+        service = build('drive', 'v3', credentials=creds)
+        file_id = st.session_state.selected_file_id
+
+        file_request = service.files().get_media(fileId=file_id)
+        file_path = f"{st.session_state.selected_file_name}"
+        with open(file_path, "wb") as f:
+            downloader = MediaIoBaseDownload(f, file_request)
+            done = False
+            while not done:
+                status, done = downloader.next_chunk()
+            st.write(f"Downloaded {st.session_state.selected_file_name}.")
+
+        if file_path.endswith(".csv"):
+            st.session_state.data = pd.read_csv(file_path)
+        elif file_path.endswith(".xlsx"):
+            st.session_state.data = pd.read_excel(file_path)
+
 
 elif st.session_state.page == "Start Chat":
     st.title("Chat with Assistant")

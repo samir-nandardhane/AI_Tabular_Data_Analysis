@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="278a3c9b-7850-47e8-806d-db179965b059" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client_secrets.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,8 +17,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="Jupyter Notebook" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -123,6 +124,9 @@
       <workItem from="1723668080396" duration="299000" />
       <workItem from="1723668431976" duration="1349000" />
       <workItem from="1724125763473" duration="1099000" />
+      <workItem from="1729899425399" duration="2113000" />
+      <workItem from="1729912268675" duration="6234000" />
+      <workItem from="1729920714962" duration="124000" />
     </task>
     <servers />
   </component>
